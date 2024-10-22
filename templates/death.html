@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YOU DIED</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet"> <!-- Link to fonts -->
+    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet"> <!-- Link to your fantasy-themed CSS -->
+    <style>
+        body {
+            background-image: url('/static/images/d.png');
+            font-family: 'Cinzel', serif;
+            background-color: #121212;
+            color: #fff;
+        }
+
+        .container {
+            width: 60%;
+            margin: auto;
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            text-align: center;
+            text-shadow: 2px 2px 5px #000;
+            margin-bottom: 20px;
+            font-size: 3em;
+        }
+
+        p {
+            font-family: 'Roboto', sans-serif;
+            font-size: 1.5em;
+            margin-bottom: 30px;
+        }
+
+        a.return-link {
+            font-family: 'Cinzel', serif;
+            background-color: #b9770e;
+            color: #fff;
+            padding: 15px 25px;
+            font-size: 1.2em;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+
+        a.return-link:hover {
+            background-color: #e59a19;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>YOU DIED!</h1>
+        <p>{{ message }}</p>
+        <a href="{{ url_for('index') }}" class="return-link">Return to Homepage</a>
+    </div>
+</body>
+</html>

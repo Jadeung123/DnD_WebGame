@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customize Your Character</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet"> <!-- Link to fonts -->
+    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet"> <!-- Link to your fantasy-themed CSS -->
+    <style>
+        body {
+            font-family: 'Cinzel', serif;
+            background-color: #121212;
+            color: #fff;
+        }
+
+        .container {
+            width: 60%;
+            margin: auto;
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            text-align: center;
+            text-shadow: 2px 2px 5px #000;
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-family: 'Roboto', sans-serif; /* Use Roboto for labels */
+            font-size: 1.2em;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"], select, textarea {
+            font-family: 'Roboto', sans-serif;
+            width: 100%;
+            padding: 10px;
+            font-size: 1em;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: none;
+        }
+
+        textarea {
+            height: 100px;
+        }
+
+        button[type="submit"] {
+            font-family: 'Cinzel', serif;
+            background-color: #6b4226;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: block;
+            margin: 20px auto;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #8d5a3c;
+        }
+
+        img {
+            display: block;
+            margin: 20px auto;
+            border: 2px solid #fff;
+            border-radius: 10px;
+            width: 200px;
+            height: 200px;
+        }
+
+        .profile-picture-container {
+            text-align: center;
+        }
+
+        h3 {
+            text-align: center;
+            font-family: 'Cinzel', serif;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Customize Your Character</h1>
+
+        {% if not profile_generated %}
+        <form method="POST" action="{{ url_for('generate_profile') }}">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+
+            <label for="surname">Surname:</label>
+            <input type="text" id="surname" name="surname" required>
+
+            <label for="race">Race:</label>
+            <select id="race" name="race" required>
+                {% for race, desc in races.items() %}
+                <option value="{{ race }}">{{ race }} - {{ desc }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="lore">Lore:</label>
+            <textarea id="lore" name="lore" required></textarea>
+
+            <button type="submit">Generate Profile</button>
+        </form>
+        {% else %}
+        <form action="{{ url_for('roll_stats') }}" method="get">
+            <button type="submit">Next</button>
+        </form>    
+        {% endif %}
+
+        {% if character_image %}
+        <div class="profile-picture-container">
+            <h3>Generated Profile Picture:</h3>
+            <img src="{{ character_image }}" alt="Character Profile">
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

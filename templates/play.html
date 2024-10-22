@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adventure Play</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Roboto:wght@400;500&display=swap">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"> <!-- FontAwesome for icons -->
+    <style>
+        body {
+            background-image: url('/static/images/bg02.jpg'); /* Fantasy game background */
+            background-size: cover;
+            background-attachment: fixed;
+            font-family: 'Cinzel', serif;
+            color: #fff;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+            text-shadow: 2px 2px 5px #000;
+        }
+        .player-stats, .dice-roll-section, .player-input-section, .outcome-section {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px auto;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+        .player-stats h3, .dice-roll-section h3, .outcome-section p {
+            font-size: 1.5em;
+        }
+        .row {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        .row .col-md-2 {
+            padding: 10px;
+        }
+        .row .col-md-2 i {
+            margin-right: 5px;
+        }
+
+        /* Health and profile */
+        .profile-health-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+        }
+        .profile-picture {
+            width: 200px;
+            height: 200px;
+            border: 2px solid #fff;
+            border-radius: 10px;
+        }
+
+        /* Health hearts */
+        .health-hearts {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 20px;
+        }
+        .health-hearts img {
+            width: 30px;
+            height: 30px;
+            margin: 0 5px;
+        }
+
+        /* Dice Roll Button */
+        .dice-btn {
+            background-color: #b9770e;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            font-size: 1.2em;
+            border-radius: 5px;
+        }
+        .dice-btn:hover {
+            background-color: #e59a19;
+        }
+
+        /* Player Input Form */
+        .player-input-section input[type="text"] {
+            padding: 10px;
+            width: 70%;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .player-input-section button {
+            background-color: #6b4226;
+            color: #fff;
+            padding: 10px 20px;
+            font-size: 1.2em;
+            border-radius: 5px;
+            border: none;
+            margin-top: 10px;
+        }
+        .player-input-section button:hover {
+            background-color: #8d5a3c;
+        }
+
+        /* Scenario and Player Input */
+        .scenario-input {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            text-align: left; /* Align scenario text to the left */
+        }
+        .scenario-text {
+            font-family: 'Roboto', sans-serif; /* Change to 'Roboto' for a more readable style */
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            white-space: pre-wrap;
+            display: inline-block; /* Ensures the text remains aligned */
+        }
+
+        /* Audio Button */
+        #play-audio {
+            background-color: #4a4e69;
+            color: #fff;
+            padding: 10px 15px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        #play-audio:hover {
+            background-color: #22223b;
+        }
+    </style>
+</head>
+<body>
+    <h1>Adventure Play</h1>
+
+    <!-- Player Stats Section -->
+    <div class="player-stats">
+        <h3>Your Stats</h3>
+        <div class="profile-health-container">
+            <!-- Profile Picture -->
+            {% if character_image %}
+                <img src="{{ character_image }}" alt="Character Profile" class="profile-picture">
+            {% endif %}
+
+            <!-- Health Hearts -->
+            <div class="health-hearts">
+                <strong>Health:</strong>
+                <span>
+                    {% for i in range(5) %}
+                        {% if i < health %}
+                            <img src="{{ url_for('static', filename='images/heart_full.png') }}" alt="Full Heart">
+                        {% else %}
+                            <img src="{{ url_for('static', filename='images/heart_empty.png') }}" alt="Empty Heart">
+                        {% endif %}
+                    {% endfor %}
+                </span>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-2">
+                <i class="fas fa-dumbbell"></i> Strength: {{ stats["Strength"] }}
+            </div>
+            <div class="col-md-2">
+                <i class="fas fa-running"></i> Dexterity: {{ stats["Dexterity"] }}
+            </div>
+            <div class="col-md-2">
+                <i class="fas fa-heart"></i> Constitution: {{ stats["Constitution"] }}
+            </div>
+            <div class="col-md-2">
+                <i class="fas fa-brain"></i> Intelligence: {{ stats["Intelligence"] }}
+            </div>
+            <div class="col-md-2">
+                <i class="fas fa-eye"></i> Wisdom: {{ stats["Wisdom"] }}
+            </div>
+            <div class="col-md-2">
+                <i class="fas fa-user-friends"></i> Charisma: {{ stats["Charisma"] }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Player input and Scenario Section -->
+    <div class="scenario-input">
+        <!-- Hidden Scenario Text -->
+        <div id="scenario-text" style="display: none;">{{ last_scenario }}</div>
+
+        <!-- Displayed Scenario Text -->
+        <p><strong>Scenario:</strong> <span id="current-scenario" class="scenario-text"></span></p>
+    </div>
+
+    <!-- Player input for next action, only show when dice roll is not needed -->
+    {% if not roll_needed %}
+    <div class="player-input-section">
+        <form method="POST" action="{{ url_for('play') }}" id="player-action-form">
+            <label for="player_input">What do you want to do?</label>
+            <input type="text" name="player_input" id="player_input" required>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+    {% endif %}
+
+    <!-- Dice Roll Section (appears only when needed) -->
+    {% if roll_needed and not last_outcome %}
+    <div class="dice-roll-section">
+        <h3>Roll the Dice for {{ stat_to_roll }}!</h3>
+        <form method="POST" action="{{ url_for('roll_dice') }}">
+            <button type="submit" class="dice-btn">Roll Dice</button>
+        </form>
+    </div>
+    {% endif %}
+
+    <!-- Show outcome and "OK" button if the roll has already been made -->
+    {% if last_outcome %}
+    <div id="dice-roll-result" class="outcome-section">
+        <p>{{ last_outcome }}</p>
+        <form method="POST" action="{{ url_for('process_dice_outcome') }}">
+            <input type="hidden" name="outcome" value="{{ last_outcome }}">
+            <button type="submit" class="btn btn-success">OK</button>
+        </form>
+    </div>
+    {% endif %}
+
+    <script>
+        // Typewriter effect for scenario text
+        window.onload = function() {
+            // Get the scenario text from the hidden div
+            const scenarioText = document.getElementById("scenario-text").innerText.trim();
+            console.log("Scenario text loaded:", scenarioText); // Debugging: check if the text is loaded
+            const scenarioElement = document.getElementById("current-scenario");
+
+            if (scenarioElement && scenarioText) {
+                let index = 0;
+
+                function typeWriter() {
+                    if (index < scenarioText.length) {
+                        scenarioElement.textContent += scenarioText.charAt(index);
+                        index++;
+                        setTimeout(typeWriter, 25); // Faster typing speed
+                    }
+                }
+
+                typeWriter();
+            } else {
+                console.error("Scenario element or text not found.");
+            }
+        };
+
+        // Audio play/pause functionality
+        var playButton = document.getElementById('play-audio');
+        var audio = document.getElementById('scenario-audio');
+        var isPlaying = false;
+
+        if (playButton) {
+            playButton.addEventListener('click', function() {
+                if (isPlaying) {
+                    audio.pause();
+                    playButton.innerHTML = '<i class="fas fa-volume-up"></i> Play Audio';
+                } else {
+                    audio.play();
+                    playButton.innerHTML = '<i class="fas fa-pause"></i> Pause Audio';
+                }
+                isPlaying = !isPlaying;
+            });
+
+            audio.addEventListener('ended', function() {
+                playButton.innerHTML = '<i class="fas fa-volume-up"></i> Play Audio';
+                isPlaying = false;
+            });
+        }
+    </script>
+</body>
+</html>

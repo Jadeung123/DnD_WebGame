@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roll for Stats</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet"> <!-- Link to fonts -->
+    <link href="/static/styles.css" rel="stylesheet"> <!-- Link to your fantasy-themed CSS -->
+    <style>
+        body {
+            font-family: 'Cinzel', serif;
+            background-color: #121212;
+            color: #fff;
+        }
+
+        .container {
+            width: 60%;
+            margin: auto;
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            text-align: center;
+            text-shadow: 2px 2px 5px #000;
+            margin-bottom: 20px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            font-family: 'Roboto', sans-serif;
+            font-size: 1.2em;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+
+        .stat-label {
+            flex: 1;
+            text-align: left;
+        }
+
+        .stat-value {
+            flex: 1;
+            text-align: right;
+        }
+
+        button.roll-button {
+            font-family: 'Cinzel', serif;
+            background-color: #6b4226;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button.roll-button:hover {
+            background-color: #8d5a3c;
+        }
+
+        #dice-overlay {
+            display: none; /* Hidden by default until roll button is clicked */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dice-image {
+            width: 800px; /* Make the dice larger */
+            height: 800px; /* Adjust height accordingly */
+            object-fit: contain;
+            position: relative;
+            border: none; /* Ensure there is no border */
+            box-shadow: none; /* Remove any potential box-shadow */
+        }
+
+        .dice-number {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 8em; /* Larger number to fit bigger dice */
+            font-family: 'Cinzel', serif;
+            color: #fff;
+            text-shadow: 0 0 10px #000;
+            pointer-events: none;
+        }
+
+        #next-section-button {
+            display: block;
+            margin: 20px auto;
+            background-color: #b9770e;
+            color: #fff;
+            padding: 15px 25px;
+            font-size: 1.2em;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #next-section-button:hover {
+            background-color: #e59a19;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+    <script>
+        $(document).ready(function() {
+            // Ensure the dice overlay is hidden initially
+            $("#dice-overlay").hide();
+    
+            let rollInterval;
+            let rolling = false;
+    
+            // AJAX function to roll a stat
+            $(".roll-button").click(function(event) {
+                event.preventDefault();
+                let stat = $(this).data("stat");
+                let button = $(this);
+                let statValueElement = $("#stat-value-" + stat);
+    
+                // Show the dice overlay
+                let overlay = $("#dice-overlay");
+                overlay.fadeIn(); // Show the overlay when player clicks to roll
+    
+                // Start rolling the dice
+                rolling = true;
+    
+                // Simulate rolling effect with random numbers
+                rollInterval = setInterval(function() {
+                    let randomNumber = Math.floor(Math.random() * 20) + 1; // Random number between 1 and 20
+                    $("#dice-number").text(randomNumber);
+                }, 100); // Change number every 100ms
+    
+                // Simulate rolling for 2 seconds or until skipped
+                setTimeout(finishRoll, 2000);
+    
+                // Function to stop rolling and show the final value
+                function finishRoll() {
+                    if (rolling) {
+                        clearInterval(rollInterval); // Stop the rolling effect
+                        rolling = false;
+    
+                        // Perform AJAX request to get the actual roll value
+                        $.ajax({
+                            url: "/roll_stat_ajax",
+                            type: "POST",
+                            contentType: "application/json",
+                            data: JSON.stringify({ stat: stat }),
+                            success: function(response) {
+                                if (response.value) {
+                                    statValueElement.text(response.value);
+                                    button.hide();
+    
+                                    // Show the final rolled value
+                                    $("#dice-number").text(response.value);
+    
+                                    // Keep the final value visible for a while before hiding
+                                    setTimeout(function() {
+                                        overlay.fadeOut(500); // Faster fade out after showing the final value for 1 second
+                                    }, 1000);
+                                }
+    
+                                // Check if all stats are rolled
+                                $.ajax({
+                                    url: "/check_all_stats_rolled",
+                                    success: function(checkResponse) {
+                                        if (checkResponse.all_stats_rolled) {
+                                            $("#next-section-button").show();
+                                        }
+                                    }
+                                });
+                            },
+                            error: function(error) {
+                                console.error("Error:", error);
+                                overlay.fadeOut(500); // Remove dice overlay on error with faster fade out
+                            }
+                        });
+                    }
+                }
+    
+                // Event listener for skipping the rolling with left click
+                $("#dice-overlay").off("click").on("click", function() {
+                    if (rolling) {
+                        finishRoll(); // Skip the rolling animation and show the result immediately
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Roll for Your Stats</h1>
+
+        <form method="POST">
+            <ul>
+                <!-- Loop through all stats -->
+                {% for stat in stats_order %}
+                    <li>
+                        <span class="stat-label"><strong>{{ stat }}:</strong></span>
+                        <span class="stat-value">
+                            {% if rolled_stats[stat] is not none %}
+                                <span id="stat-value-{{ stat }}">{{ rolled_stats[stat] }}</span>
+                            {% else %}
+                                <button id="roll-button-{{ stat }}" class="roll-button" data-stat="{{ stat }}">Roll {{ stat }}</button>
+                                <span id="stat-value-{{ stat }}"></span>
+                            {% endif %}
+                        </span>
+                    </li>
+                {% endfor %}
+            </ul>
+
+            <!-- Next button to proceed to the next section -->
+            <button id="next-section-button" type="submit" name="next_section" value="next" class="{% if all_stats_rolled %} {% else %}hidden{% endif %}">Next</button>
+        </form>
+    </div>
+
+    <!-- Dice Overlay -->
+    <div id="dice-overlay">
+        <img class="dice-image" src="/static/images/d20-dice.png" alt="D20 Dice">
+        <div id="dice-number" class="dice-number"></div>
+    </div>
+</body>
+</html>

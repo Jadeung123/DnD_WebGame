@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fantasy Adventure</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap">
+    <style>
+        body {
+            background-image: url('/static/images/bg01.webp'); /* Add a fantasy background */
+            background-size: cover;
+            font-family: 'Cinzel', serif; /* Fantasy themed font */
+            color: #fff;
+            text-align: center;
+        }
+        h1 {
+            font-size: 3em;
+            margin-top: 100px;
+            text-shadow: 2px 2px 4px #000000;
+        }
+        .start-btn {
+            background-color: #6b4226;
+            color: #fff;
+            padding: 15px 30px;
+            font-size: 1.5em;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        .start-btn:hover {
+            background-color: #8d5a3c;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to Your Fantasy Adventure!</h1>
+    <form action="{{ url_for('customize_character') }}" method="GET">
+        <button class="start-btn">Start Your Journey</button>
+    </form>    
+</body>
+</html>

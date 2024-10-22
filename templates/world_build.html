@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Build</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet"> <!-- Link to fonts -->
+    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet"> <!-- Link to your fantasy-themed CSS -->
+    <style>
+        body {
+            font-family: 'Cinzel', serif;
+            background-color: #121212;
+            color: #fff;
+        }
+
+        .container {
+            width: 80%;
+            margin: auto;
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            text-align: center;
+            text-shadow: 2px 2px 5px #000;
+            margin-bottom: 20px;
+        }
+
+        .world-text {
+            font-family: 'Roboto', sans-serif; /* Use Roboto for the typewriter text */
+            font-size: 1.4em; /* Bigger font size */
+            white-space: pre-wrap;
+            margin-bottom: 20px;
+        }
+
+        a {
+            display: inline-block;
+            text-decoration: none;
+            font-size: 1.2em;
+            background-color: #6b4226;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: none;
+            text-align: center;
+        }
+
+        a:hover {
+            background-color: #8d5a3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>World Build</h1>
+        <!-- Hidden World Text -->
+        <div id="world-text" style="display: none;">{{ world }}</div>
+        <!-- Displayed World Text with typewriter effect -->
+        <p id="current-world" class="world-text"></p>
+        <a href="{{ url_for('play') }}">Continue to the Game</a>
+    </div>
+
+    <script>
+        // Typewriter effect for world build text
+        window.onload = function() {
+            // Get the world text from the hidden div
+            const worldText = document.getElementById("world-text").innerText.trim();
+            console.log("World text loaded:", worldText); // Debugging: check if the text is loaded
+            const worldElement = document.getElementById("current-world");
+
+            if (worldElement && worldText) {
+                let index = 0;
+
+                function typeWriter() {
+                    if (index < worldText.length) {
+                        worldElement.textContent += worldText.charAt(index);
+                        index++;
+                        setTimeout(typeWriter, 10); // Faster typing speed (previously 25)
+                    }
+                }
+
+                typeWriter();
+            } else {
+                console.error("World element or text not found.");
+            }
+        };
+    </script>
+</body>
+</html>
