@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Adventure Play</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Roboto:wght@400;500&display=swap">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"> <!-- FontAwesome for icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
         body {
-            background-image: url('/static/images/bg02.jpg'); /* Fantasy game background */
+            background-image: url('/static/images/bg02.jpg');
             background-size: cover;
             background-attachment: fixed;
             font-family: 'Cinzel', serif;
@@ -109,14 +109,14 @@
             padding: 20px;
             background: rgba(0, 0, 0, 0.7);
             border-radius: 10px;
-            text-align: left; /* Align scenario text to the left */
+            text-align: left;
         }
         .scenario-text {
-            font-family: 'Roboto', sans-serif; /* Change to 'Roboto' for a more readable style */
+            font-family: 'Roboto', sans-serif;
             font-size: 1.2em;
             margin-bottom: 20px;
             white-space: pre-wrap;
-            display: inline-block; /* Ensures the text remains aligned */
+            display: inline-block;
         }
 
         /* Audio Button */
@@ -225,11 +225,9 @@
     {% endif %}
 
     <script>
-        // Typewriter effect for scenario text
         window.onload = function() {
-            // Get the scenario text from the hidden div
             const scenarioText = document.getElementById("scenario-text").innerText.trim();
-            console.log("Scenario text loaded:", scenarioText); // Debugging: check if the text is loaded
+            //console.log("Scenario text loaded:", scenarioText); // Debugging: check if the text is loaded
             const scenarioElement = document.getElementById("current-scenario");
 
             if (scenarioElement && scenarioText) {
@@ -239,7 +237,7 @@
                     if (index < scenarioText.length) {
                         scenarioElement.textContent += scenarioText.charAt(index);
                         index++;
-                        setTimeout(typeWriter, 25); // Faster typing speed
+                        setTimeout(typeWriter, 25);
                     }
                 }
 
@@ -249,7 +247,6 @@
             }
         };
 
-        // Audio play/pause functionality
         var playButton = document.getElementById('play-audio');
         var audio = document.getElementById('scenario-audio');
         var isPlaying = false;

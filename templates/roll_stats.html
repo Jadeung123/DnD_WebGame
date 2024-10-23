@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Roll for Stats</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet"> <!-- Link to fonts -->
-    <link href="/static/styles.css" rel="stylesheet"> <!-- Link to your fantasy-themed CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link href="/static/styles.css" rel="stylesheet">
     <style>
         body {
             font-family: 'Cinzel', serif;
@@ -73,7 +73,7 @@
         }
 
         #dice-overlay {
-            display: none; /* Hidden by default until roll button is clicked */
+            display: none;
             position: fixed;
             top: 0;
             left: 0;
@@ -87,12 +87,12 @@
         }
 
         .dice-image {
-            width: 800px; /* Make the dice larger */
-            height: 800px; /* Adjust height accordingly */
+            width: 800px;
+            height: 800px;
             object-fit: contain;
             position: relative;
-            border: none; /* Ensure there is no border */
-            box-shadow: none; /* Remove any potential box-shadow */
+            border: none;
+            box-shadow: none;
         }
 
         .dice-number {
@@ -100,7 +100,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 8em; /* Larger number to fit bigger dice */
+            font-size: 8em;
             font-family: 'Cinzel', serif;
             color: #fff;
             text-shadow: 0 0 10px #000;
@@ -130,42 +130,34 @@
     </style>
     <script>
         $(document).ready(function() {
-            // Ensure the dice overlay is hidden initially
             $("#dice-overlay").hide();
     
             let rollInterval;
             let rolling = false;
     
-            // AJAX function to roll a stat
             $(".roll-button").click(function(event) {
                 event.preventDefault();
                 let stat = $(this).data("stat");
                 let button = $(this);
                 let statValueElement = $("#stat-value-" + stat);
     
-                // Show the dice overlay
                 let overlay = $("#dice-overlay");
-                overlay.fadeIn(); // Show the overlay when player clicks to roll
+                overlay.fadeIn();
     
-                // Start rolling the dice
                 rolling = true;
     
-                // Simulate rolling effect with random numbers
                 rollInterval = setInterval(function() {
-                    let randomNumber = Math.floor(Math.random() * 20) + 1; // Random number between 1 and 20
+                    let randomNumber = Math.floor(Math.random() * 20) + 1;
                     $("#dice-number").text(randomNumber);
-                }, 100); // Change number every 100ms
+                }, 100);
     
-                // Simulate rolling for 2 seconds or until skipped
                 setTimeout(finishRoll, 2000);
     
-                // Function to stop rolling and show the final value
                 function finishRoll() {
                     if (rolling) {
-                        clearInterval(rollInterval); // Stop the rolling effect
+                        clearInterval(rollInterval);
                         rolling = false;
     
-                        // Perform AJAX request to get the actual roll value
                         $.ajax({
                             url: "/roll_stat_ajax",
                             type: "POST",
@@ -176,16 +168,13 @@
                                     statValueElement.text(response.value);
                                     button.hide();
     
-                                    // Show the final rolled value
                                     $("#dice-number").text(response.value);
     
-                                    // Keep the final value visible for a while before hiding
                                     setTimeout(function() {
-                                        overlay.fadeOut(500); // Faster fade out after showing the final value for 1 second
+                                        overlay.fadeOut(500);
                                     }, 1000);
                                 }
     
-                                // Check if all stats are rolled
                                 $.ajax({
                                     url: "/check_all_stats_rolled",
                                     success: function(checkResponse) {
@@ -197,16 +186,15 @@
                             },
                             error: function(error) {
                                 console.error("Error:", error);
-                                overlay.fadeOut(500); // Remove dice overlay on error with faster fade out
+                                overlay.fadeOut(500);
                             }
                         });
                     }
                 }
     
-                // Event listener for skipping the rolling with left click
                 $("#dice-overlay").off("click").on("click", function() {
                     if (rolling) {
-                        finishRoll(); // Skip the rolling animation and show the result immediately
+                        finishRoll();
                     }
                 });
             });

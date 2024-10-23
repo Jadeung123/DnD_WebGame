@@ -30,8 +30,8 @@
         }
 
         .world-text {
-            font-family: 'Roboto', sans-serif; /* Use Roboto for the typewriter text */
-            font-size: 1.4em; /* Bigger font size */
+            font-family: 'Roboto', sans-serif;
+            font-size: 1.4em;
             white-space: pre-wrap;
             margin-bottom: 20px;
         }
@@ -64,11 +64,9 @@
     </div>
 
     <script>
-        // Typewriter effect for world build text
         window.onload = function() {
-            // Get the world text from the hidden div
             const worldText = document.getElementById("world-text").innerText.trim();
-            console.log("World text loaded:", worldText); // Debugging: check if the text is loaded
+            console.log("World text loaded:", worldText);
             const worldElement = document.getElementById("current-world");
 
             if (worldElement && worldText) {
@@ -78,7 +76,7 @@
                     if (index < worldText.length) {
                         worldElement.textContent += worldText.charAt(index);
                         index++;
-                        setTimeout(typeWriter, 10); // Faster typing speed (previously 25)
+                        setTimeout(typeWriter, 10);
                     }
                 }
 

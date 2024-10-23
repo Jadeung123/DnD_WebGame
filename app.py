@@ -7,23 +7,19 @@ from dotenv import load_dotenv
 import re
 import pyttsx3
 import requests
-import uuid  # Add this import to generate unique filenames
+import uuid
 
-# Modify the AI scenario generation to limit text length and store only the last two scenarios
-MAX_TEXT_LENGTH = 300  # Define the maximum text length for AI responses
-MAX_LOG_SIZE = 3  # Adjust the log size as necessary
+MAX_TEXT_LENGTH = 300
+MAX_LOG_SIZE = 3
 
 # Load environment variables
 load_dotenv()
 
-# Initialize Flask app
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # Replace with a strong secret key for session handling
+app.secret_key = 'your_secret_key'
 
-# Configure the Google Generative AI API
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
-# Dice and races
 DICE = {
     "D4": (4, "Four-sided dice"),
     "D6": (6, "Six-sided dice"),
@@ -58,10 +54,8 @@ RACES = {
     "Gith": "Disciplined and skilled. +2 Intelligence, +1 Dexterity."
 }
 
-# Define STATS_ORDER globally to avoid NameError
 STATS_ORDER = ["Strength", "Dexterity", "Constitution", "Intelligence", "Wisdom", "Charisma"]
 
-# Create the model configuration
 generation_config = {
     "temperature": 1,
     "top_p": 0.95,
@@ -91,16 +85,16 @@ def search_character_image(name, race, lore):
     headers = {
         "Authorization": api_key
     }
-    query = f"{race} fantasy {name} {lore}"  # Construct a query using the character info
+    query = f"{race} fantasy {name} {lore}"
     params = {
         "query": query,
-        "per_page": 1  # Return only one image
+        "per_page": 1
     }
 
     response = requests.get(url, headers=headers, params=params)
     if response.status_code == 200:
         result = response.json()
-        image_url = result['photos'][0]['src']['original']  # Get the URL of the first image
+        image_url = result['photos'][0]['src']['original']
         return image_url
     else:
         print(f"Error: {response.status_code} - {response.text}")
@@ -109,35 +103,29 @@ def search_character_image(name, race, lore):
 @app.route('/generate_profile', methods=['POST'])
 def generate_profile():
     """Generate the character profile image and save to session."""
-    # Get the character details from the form
     name = request.form['name']
     surname = request.form['surname']
     race = request.form['race']
     lore = request.form['lore']
 
-    # Save character details in session
     session['name'] = name
     session['surname'] = surname
     session['race'] = race
     session['lore'] = lore
 
-    # Generate the character image using Pexels API (or placeholder function)
     character_image_url = search_character_image(name, race, lore)
 
     if character_image_url:
-        # Save the image URL in the session to use later
         session['character_image'] = character_image_url
         session.modified = True
 
-    # Pass a flag that indicates the profile has been generated
     return render_template(
         'customize_character.html',
         races=RACES,
         character_image=character_image_url,
-        profile_generated=True  # This flag tells the template to show the "Next" button
+        profile_generated=True
     )
 
-# Generate world build using AI
 def generate_world_build():
     prompt = "You are the Dungeon Master of a fantasy world. Describe the world vividly for the player's adventure."
     chat_session = genai.GenerativeModel(
@@ -151,26 +139,23 @@ def generate_world_build():
     }
     ).start_chat(history=[])
     response = chat_session.send_message(prompt)
-    return response.text.strip()  # Return only the text
+    return response.text.strip()
 
-# Roll for stats (4d6 drop lowest)
 def roll_dice_stat():
     rolls = sorted([random.randint(1, 6) for _ in range(4)])
-    total = sum(rolls[1:])  # Drop the lowest roll
-    return total, rolls  # Return both the total and individual rolls
+    total = sum(rolls[1:])
+    return total, rolls
 
-# Randomly select a dice type for the event
 def select_dice():
     dice_type = random.choice(list(DICE.keys()))
     return dice_type
 
-# Evaluate outcome based on stat check and dice roll
 def evaluate_outcome(dice_result, stat_value, ai_scenario):
     difficulty_keywords = {
         "easy": 5, "simple": 6, "moderate": 10,
         "challenging": 15, "hard": 18, "impossible": 20
     }
-    threshold = 10  # Default threshold
+    threshold = 10
     for keyword, value in difficulty_keywords.items():
         if keyword in ai_scenario.lower():
             threshold = value
@@ -178,12 +163,10 @@ def evaluate_outcome(dice_result, stat_value, ai_scenario):
     outcome = dice_result + (stat_value // 2)
     return "Success!" if outcome >= threshold else "Failure!"
 
-# Enhanced dynamic stat detection
 def determine_stat_from_input(player_input):
     """Dynamically determine the appropriate stat to check based on the player's input."""
     stat = None
     
-    # Basic logic to map inputs to stats
     actions_strength = re.search(r'\b(punch|hit|attack|strike|throw)\b', player_input, re.IGNORECASE)
     actions_dexterity = re.search(r'\b(run|dodge|jump|sneak)\b', player_input, re.IGNORECASE)
     actions_constitution = re.search(r'\b(endure|withstand|resist|survive)\b', player_input, re.IGNORECASE)
@@ -191,7 +174,6 @@ def determine_stat_from_input(player_input):
     actions_wisdom = re.search(r'\b(perceive|sense|notice|discern)\b', player_input, re.IGNORECASE)
     actions_charisma = re.search(r'\b(talk|persuade|convince|charm)\b', player_input, re.IGNORECASE)
 
-    # Map input actions to stats
     if actions_strength:
         stat = "Strength"
     elif actions_dexterity:
@@ -210,7 +192,7 @@ def determine_stat_from_input(player_input):
 @app.route('/')
 def index():
     """Home page"""
-    session.clear()  # Clear the session when visiting the homepage to start fresh
+    session.clear()
     return render_template('index.html')
 
 @app.route('/customize_character', methods=['GET', 'POST'])
@@ -221,9 +203,8 @@ def customize_character():
         session['surname'] = request.form['surname']
         session['race'] = request.form['race']
         session['lore'] = request.form['lore']
-        session['rolled_stats'] = {stat: None for stat in STATS_ORDER}  # Initialize all stats with None
+        session['rolled_stats'] = {stat: None for stat in STATS_ORDER}
 
-        # Generate the image from the character description
         character_description = f"{session['name']} {session['surname']}, a {session['race']}. {session['lore']}"
         image_url = search_character_image(session['name'], session['race'], session['lore'])
 
@@ -243,7 +224,7 @@ def roll_stat_ajax():
     if stat and session['rolled_stats'][stat] is None:
         stat_value, dice_rolls = roll_dice_stat()
         session['rolled_stats'][stat] = stat_value
-        session.modified = True  # Ensure session is saved properly across requests
+        session.modified = True
         return jsonify({'stat': stat, 'value': stat_value})
 
     return jsonify({'error': 'Invalid request or stat already rolled'}), 400
@@ -259,16 +240,13 @@ def roll_stats():
     """Page for rolling stats all at once"""
     stats_order = STATS_ORDER
 
-    # Ensure 'rolled_stats' is always in session
     if 'rolled_stats' not in session:
         session['rolled_stats'] = {stat: None for stat in STATS_ORDER}
 
     if request.method == 'POST':
-        # Handle the Next button to proceed to the next section
         if 'next_section' in request.form:
             return redirect(url_for('world_build'))
 
-    # Check if all stats are rolled to enable the Next button
     all_stats_rolled = all(session['rolled_stats'].values())
 
     return render_template(
@@ -285,13 +263,11 @@ def roll_dice_ajax():
     stat_to_roll = data.get('stat')
 
     if stat_to_roll and 'rolled_stats' in session:
-        # Roll the dice for the provided stat
-        dice_choice = select_dice()  # Randomly select a dice type
+        dice_choice = select_dice()
         dice_result = random.randint(1, DICE[dice_choice][0])
 
-        # Calculate outcome based on the stat value
         stat_value = session['rolled_stats'][stat_to_roll]
-        threshold = 10  # Set a default threshold (adjustable based on scenario)
+        threshold = 10
         outcome = evaluate_outcome(dice_result, stat_value, session.get('last_scenario'))
 
         return jsonify({
@@ -306,21 +282,17 @@ def process_dice_outcome():
     """Process the outcome of the dice roll and move the game forward."""
     outcome = request.form.get('outcome')
 
-    # Ensure the outcome exists
     if not outcome:
         return redirect(url_for('play'))
 
-    # Decrease health if the outcome is a failure
     if "Failure!" in outcome:
-        session['health'] -= 1  # Reduce health by 1
+        session['health'] -= 1
         if session['health'] <= 0:
-            return redirect(url_for('death'))  # Redirect to death page if health reaches 0
+            return redirect(url_for('death'))
 
-    # Generate the next scenario based on the outcome of the dice roll
     world_build = session['world']
     player_lore = session.get('lore', '')
 
-    # Generate the next scenario based on the outcome
     prompt = f"""
     World setting: {world_build}
     Player's lore: {player_lore}
@@ -330,7 +302,6 @@ def process_dice_outcome():
     Avoid giving choices, long descriptions, or additional tasks.
     """
 
-    # AI request to generate the next scenario
     chat_session = genai.GenerativeModel(
         model_name="gemini-1.5-flash",
         generation_config=generation_config,
@@ -344,22 +315,18 @@ def process_dice_outcome():
 
     next_scenario = chat_session.send_message(prompt).text.strip()
 
-    # Ensure the AI generates a new scenario to avoid looping
     if next_scenario == session.get('last_scenario'):
         next_scenario = f"New events happen following the last outcome: {outcome}"
 
-    # Update the session and reset the game state
     session['last_scenario'] = next_scenario
     session['game_log'].append(f"Scenario: {next_scenario}")
 
-    # Limit the game log size
     session['game_log'] = session['game_log'][-MAX_LOG_SIZE:]
-    session['last_outcome'] = None  # Clear last outcome after processing
-    session['roll_needed'] = False  # Reset roll_needed to exit dice roll state
-    session['stat_to_roll'] = None  # Reset stat_to_roll
+    session['last_outcome'] = None
+    session['roll_needed'] = False
+    session['stat_to_roll'] = None
     session.modified = True
 
-    # Redirect back to the play route to continue the game
     return redirect(url_for('play'))
 
 @app.route('/world_build', methods=['GET', 'POST'])
@@ -372,18 +339,17 @@ def world_build():
         session['game_log'] = [f"World: {session['world']}"]
 
     if request.method == 'POST':
-        # Redirect to play without generating the first scenario here
         return redirect(url_for('play'))
 
     return render_template('world_build.html', world=session['world'])
 
 
-MAX_LOG_SIZE = 5  # Keep only the last 5 scenarios in the log
+MAX_LOG_SIZE = 5
 
 def trim_ai_response(response):
     """Trim AI response to a defined max length."""
     if len(response) > MAX_TEXT_LENGTH:
-        return response[:MAX_TEXT_LENGTH].strip() + "..."  # Add ellipsis to indicate trimming
+        return response[:MAX_TEXT_LENGTH].strip() + "..."
     return response
 
 @app.route('/play', methods=['GET', 'POST'])
@@ -407,7 +373,6 @@ def play():
 
     session['game_log'] = session['game_log'][-MAX_LOG_SIZE:]
 
-    # Check if the first scenario needs to be generated
     if not session.get('last_scenario'):
         if 'world' in session and 'lore' in session:
             session['last_scenario'] = generate_first_scenario(session['world'], session['lore'])
@@ -443,7 +408,6 @@ def play():
         Continue the story. Create a new scenario based on the player's actions.
         """
 
-        # Generate new scenario using AI
         chat_session = genai.GenerativeModel(
             model_name="gemini-1.5-flash",
             generation_config=generation_config,
@@ -460,7 +424,6 @@ def play():
         if ai_scenario == session.get('last_scenario'):
             ai_scenario = f"A new event unfolds based on your input: {player_input}"
 
-        # Reset audio path to None if the scenario has changed
         if ai_scenario != session.get('scenario_for_audio'):
             # Delete the previous audio file if it exists
             # if session['tts_audio_path']:
@@ -476,7 +439,6 @@ def play():
             # session['tts_audio_path'] = tts_audio_path
             session['scenario_for_audio'] = ai_scenario
 
-        # Update session with the new scenario and log
         session['last_scenario'] = ai_scenario
         session['game_log'].append(f"Scenario: {ai_scenario}")
         session['game_log'] = session['game_log'][-MAX_LOG_SIZE:]
@@ -502,35 +464,30 @@ def play():
 @app.route('/death')
 def death():
     """Handle player's death and redirect to homepage."""
-    session.clear()  # Clear the session to reset the game
+    session.clear()
     return render_template('death.html', message="YOU DIED! Start again?")
 
 @app.route('/roll_dice', methods=['POST'])
 def roll_dice():
     """Handle dice roll and process outcome."""
-    # Roll the dice based on the stat the player needs to roll for
     stat_to_roll = session.get('stat_to_roll')
 
     if stat_to_roll:
-        dice_choice = select_dice()  # Randomly select a dice type
+        dice_choice = select_dice()
         dice_result = random.randint(1, DICE[dice_choice][0])
         
-        # Calculate outcome based on the stat value
         stat_value = session['rolled_stats'][stat_to_roll]
         scenario = session['last_scenario']
         outcome = evaluate_outcome(dice_result, stat_value, scenario)
 
-        # Check if the outcome is a failure and if it's a dangerous scenario
         if "danger" in scenario.lower() and "Failure!" in outcome:
-            session['health'] -= 1  # Deduct one heart if failed in a dangerous scenario
+            session['health'] -= 1
             if session['health'] <= 0:
-                return redirect(url_for('death'))  # Redirect to death page if health reaches 0
+                return redirect(url_for('death'))
 
-        # Save the outcome in the session to display it in the next step
         session['last_outcome'] = f"Rolled {dice_choice}: {dice_result} ({outcome})"
         session.modified = True
 
-    # Redirect back to the play route to continue the game
     return redirect(url_for('play'))
 
 def generate_first_scenario(world_build, player_lore):
